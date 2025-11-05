@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+
+  app:
+    build: .
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - ADMIN_USERNAME=admin
+      - ADMIN_PASSWORD=change_me
+      - OTP_PEPPER=please-change
+      - OTP_DEFAULT_LENGTH=6
+      - OTP_DEFAULT_TTL_SECONDS=300
+      
+      # Email Configuration (configure these for email functionality)
+      - SMTP_HOST=smtp.gmail.com
+      - SMTP_PORT=587
+      - SMTP_USERNAME=your-email@gmail.com
+      - SMTP_PASSWORD=your-app-password
+      - SMTP_USE_TLS=true
+      - EMAIL_FROM=noreply@your-domain.com
+      - EMAIL_FROM_NAME=OTP Service
+      - ORGANIZATION_NAME=Your Organization
+      - EMAIL_SUBJECT_TEMPLATE=Your OTP Code - {organization}
+      
+      # Security & Spam Protection
+      - ALLOWED_DOMAINS=gmail.com,yahoo.com,outlook.com
+      - SPAM_KEYWORDS=spam,scam,phishing
+
+    ports:
+      - "8000-8001:8000"
+    depends_on:
+      - redis
+    deploy:
+      replicas: 2
+
+  frontend:
+    build: ./frontend
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      - app
+
+volumes:
+  redis-data:
