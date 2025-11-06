@@ -13,7 +13,7 @@ export interface ServiceStats {
 }
 
 export const fetchServiceStats = async (): Promise<ServiceStats> => {
-  const base = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:5000';
+  const base = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
   
   try {
     const response = await fetch(`${base}/api/v1/metrics`);
